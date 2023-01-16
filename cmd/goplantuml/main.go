@@ -33,7 +33,7 @@ func (as RenderingOptionSlice) Swap(i, j int) {
 }
 
 func main() {
-	recursive := flag.Bool("recursive", true, "walk all directories recursively")
+	recursive := flag.Bool("recursive", false, "walk all directories recursively")
 	ignore := flag.String("ignore", "", "comma separated list of folders to ignore")
 	showAggregations := flag.Bool("show-aggregations", true, "renders public aggregations even when -hide-connections is used (do not render by default)")
 	hideFields := flag.Bool("hide-fields", false, "hides fields")
