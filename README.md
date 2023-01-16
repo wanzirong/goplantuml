@@ -36,7 +36,7 @@ goplantuml [-recursive] path/to/gofiles path/to/gofiles2 > diagram_file_name.pum
 ```
 Usage of goplantuml:
   -aggregate-private-members
-        Show aggregations for private members. Ignored if -show-aggregations is not used.
+        Show aggregations for private members. Ignored if -show-aggregations is not used (render by default).
   -hide-connections
         hides all connections in the diagram
   -hide-fields
@@ -52,21 +52,25 @@ Usage of goplantuml:
   -recursive
         walk all directories recursively
   -show-aggregations
-        renders public aggregations even when -hide-connections is used (do not render by default)
+        renders public aggregations even when -hide-connections is used (render by default)
   -show-aliases
         Shows aliases even when -hide-connections is used
   -show-compositions
-        Shows compositions even when -hide-connections is used
+        Shows compositions even when -hide-connections is used (render by default)
+  -show-dependents
+        Shows dependents even when -hide-connections is used (do not render by default)      
   -show-connection-labels
         Shows labels in the connections to identify the connections types (e.g. extends, implements, aggregates, alias of
   -show-implementations
-        Shows implementations even when -hide-connections is used
+        Shows implementations even when -hide-connections is used (render by default)
   -show-options-as-note
         Show a note in the diagram with the none evident options ran with this CLI
   -title string
         Title of the generated diagram
   -hide-private-members
         Hides all private members (fields and methods)
+  -hide-std-packages
+        Hides standard packages (do not render by default)      
 ```
 
 #### Example
