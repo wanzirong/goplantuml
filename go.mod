@@ -3,7 +3,6 @@ module github.com/wanzirong/goplantuml
 go 1.17
 
 require (
-	github.com/wanzirong/goplantuml v1.6.1
 	github.com/spf13/afero v1.8.2
 	golang.org/x/tools v0.1.0
 )
