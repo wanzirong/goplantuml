@@ -250,7 +250,7 @@ func TestAddToComposition(t *testing.T) {
 		PackageName: "test",
 		Fields:      make([]*Field, 0),
 		Composition: make(map[string]struct{}),
-		Extends:     make(map[string]struct{}),
+		Extends:     make(map[string]ExtendVal),
 	}
 	st.AddToComposition("Foo")
 
@@ -298,17 +298,17 @@ func TestAddToExtension(t *testing.T) {
 		PackageName: "test",
 		Fields:      make([]*Field, 0),
 		Composition: make(map[string]struct{}),
-		Extends:     make(map[string]struct{}),
+		Extends:     make(map[string]ExtendVal),
 	}
-	st.AddToExtends("Foo")
+	st.AddToExtends("Foo", false)
 
-	if !arrayContains(st.Extends, "Foo") {
+	if !arrayExtendValContains(st.Extends, "Foo") {
 		t.Errorf("TestAddToComposition: Expected Extends Array to have %s, but it contains %v", "Foo", st.Composition)
 	}
 
-	st.AddToExtends("")
+	st.AddToExtends("", false)
 
-	if arrayContains(st.Extends, "") {
+	if arrayExtendValContains(st.Extends, "") {
 		t.Errorf(`TestAddToComposition: Expected Extends Array to not have "", but it contains %v`, st.Composition)
 	}
 	testArray := map[string]struct{}{
@@ -318,15 +318,26 @@ func TestAddToExtension(t *testing.T) {
 		t.Errorf("TestAddToComposition: Expected Extends Array to be %v, but it contains %v", testArray, st.Composition)
 	}
 
-	st.AddToExtends("*Foo2")
+	st.AddToExtends("*Foo2", false)
 
-	if !arrayContains(st.Extends, "Foo2") {
+	if !arrayExtendValContains(st.Extends, "Foo2") {
 		t.Errorf("TestAddToComposition: Expected Extends Array to have %s, but it contains %v", "Foo2", st.Composition)
 	}
 }
 
 func arrayContains(a map[string]struct{}, text string) bool {
 
+	found := false
+	for v := range a {
+		if v == text {
+			found = true
+			break
+		}
+	}
+	return found
+}
+
+func arrayExtendValContains(a map[string]ExtendVal, text string) bool {
 	found := false
 	for v := range a {
 		if v == text {
@@ -351,7 +362,7 @@ func TestAddField(t *testing.T) {
 		Type:         "class",
 		Fields:       make([]*Field, 0),
 		Composition:  make(map[string]struct{}),
-		Extends:      make(map[string]struct{}),
+		Extends:      make(map[string]ExtendVal),
 		Aggregations: make(map[string]struct{}),
 	}
 	st.AddField(&ast.Field{

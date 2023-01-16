@@ -4,12 +4,13 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	goplantuml "github.com/jfeliu007/goplantuml/parser"
 	"io"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+
+	goplantuml "github.com/jfeliu007/goplantuml/parser"
 )
 
 // RenderingOptionSlice will implements the sort interface
@@ -32,22 +33,24 @@ func (as RenderingOptionSlice) Swap(i, j int) {
 }
 
 func main() {
-	recursive := flag.Bool("recursive", false, "walk all directories recursively")
+	recursive := flag.Bool("recursive", true, "walk all directories recursively")
 	ignore := flag.String("ignore", "", "comma separated list of folders to ignore")
-	showAggregations := flag.Bool("show-aggregations", false, "renders public aggregations even when -hide-connections is used (do not render by default)")
+	showAggregations := flag.Bool("show-aggregations", true, "renders public aggregations even when -hide-connections is used (do not render by default)")
 	hideFields := flag.Bool("hide-fields", false, "hides fields")
 	hideMethods := flag.Bool("hide-methods", false, "hides methods")
 	hideConnections := flag.Bool("hide-connections", false, "hides all connections in the diagram")
-	showCompositions := flag.Bool("show-compositions", false, "Shows compositions even when -hide-connections is used")
-	showImplementations := flag.Bool("show-implementations", false, "Shows implementations even when -hide-connections is used")
+	showCompositions := flag.Bool("show-compositions", true, "Shows compositions even when -hide-connections is used")
+	showDependents := flag.Bool("show-dependents", false, "Shows dependents even when -hide-connections is used")
+	showImplementations := flag.Bool("show-implementations", true, "Shows implementations even when -hide-connections is used")
 	showAliases := flag.Bool("show-aliases", false, "Shows aliases even when -hide-connections is used")
 	showConnectionLabels := flag.Bool("show-connection-labels", false, "Shows labels in the connections to identify the connections types (e.g. extends, implements, aggregates, alias of")
 	title := flag.String("title", "", "Title of the generated diagram")
 	notes := flag.String("notes", "", "Comma separated list of notes to be added to the diagram")
 	output := flag.String("output", "", "output file path. If omitted, then this will default to standard output")
 	showOptionsAsNote := flag.Bool("show-options-as-note", false, "Show a note in the diagram with the none evident options ran with this CLI")
-	aggregatePrivateMembers := flag.Bool("aggregate-private-members", false, "Show aggregations for private members. Ignored if -show-aggregations is not used.")
+	aggregatePrivateMembers := flag.Bool("aggregate-private-members", true, "Show aggregations for private members. Ignored if -show-aggregations is not used.")
 	hidePrivateMembers := flag.Bool("hide-private-members", false, "Hide private fields and methods")
+	hideStdPackages := flag.Bool("hide-std-packages", true, "Show std packages")
 	flag.Parse()
 	renderingOptions := map[goplantuml.RenderingOption]interface{}{
 		goplantuml.RenderConnectionLabels:  *showConnectionLabels,
@@ -57,12 +60,14 @@ func main() {
 		goplantuml.RenderTitle:             *title,
 		goplantuml.AggregatePrivateMembers: *aggregatePrivateMembers,
 		goplantuml.RenderPrivateMembers:    !*hidePrivateMembers,
+		goplantuml.RenderIgnoreStdPackages: *hideStdPackages,
+		goplantuml.RenderDependents:        *showDependents,
 	}
 	if *hideConnections {
 		renderingOptions[goplantuml.RenderAliases] = *showAliases
 		renderingOptions[goplantuml.RenderCompositions] = *showCompositions
 		renderingOptions[goplantuml.RenderImplementations] = *showImplementations
-
+		renderingOptions[goplantuml.RenderDependents] = *showDependents
 	}
 	noteList := []string{}
 	if *showOptionsAsNote {

@@ -95,7 +95,7 @@ func TestGetOrCreateStruct(t *testing.T) {
 					Fields:              make([]*Field, 0),
 					Type:                "",
 					Composition:         make(map[string]struct{}, 0),
-					Extends:             make(map[string]struct{}, 0),
+					Extends:             make(map[string]ExtendVal, 0),
 					Aggregations:        make(map[string]struct{}, 0),
 					PrivateAggregations: make(map[string]struct{}, 0),
 				}) {
@@ -230,7 +230,8 @@ func TestRenderStructure(t *testing.T) {
 	compositionBuilder := &LineStringBuilder{}
 	extendBuilder := &LineStringBuilder{}
 	aggregationsBuilder := &LineStringBuilder{}
-	parser.renderStructure(st, "main", "TestClass", lineBuilder, compositionBuilder, extendBuilder, aggregationsBuilder)
+	dependentsBuilder := &LineStringBuilder{}
+	parser.renderStructure(st, "main", "TestClass", lineBuilder, compositionBuilder, extendBuilder, aggregationsBuilder, dependentsBuilder)
 	expectedLineBuilder := "    class TestClass << (S,Aquamarine) >> {\n        - privateField int\n\n        + PublicField error\n\n        - foo( int,  string) (error, int)\n\n        + Boo( string,  int) int\n\n    }\n"
 	if lineBuilder.String() != expectedLineBuilder {
 		t.Errorf("TestRenderStructure: Expected lineBuilder [%s] got [%s]", expectedLineBuilder, lineBuilder.String())
@@ -256,7 +257,7 @@ func getTestStruct() *Struct {
 		Composition: map[string]struct{}{
 			"foopack.AnotherClass": {},
 		},
-		Extends: map[string]struct{}{
+		Extends: map[string]ExtendVal{
 			"NewClass": {},
 		},
 		Aggregations: map[string]struct{}{},
@@ -306,7 +307,7 @@ func TestRenderCompositions(t *testing.T) {
 		Composition: map[string]struct{}{
 			"foopack.AnotherClass": {},
 		},
-		Extends: map[string]struct{}{
+		Extends: map[string]ExtendVal{
 			"foopack.YetAnotherClass": {},
 		},
 	}
@@ -347,7 +348,7 @@ func TestRenderExtends(t *testing.T) {
 	parser := getEmptyParser("main")
 	st := &Struct{
 		PackageName: "main",
-		Extends: map[string]struct{}{
+		Extends: map[string]ExtendVal{
 			"foopack.AnotherClass": {},
 		},
 	}
@@ -360,7 +361,7 @@ func TestRenderExtends(t *testing.T) {
 
 	st = &Struct{
 		PackageName: "main",
-		Extends: map[string]struct{}{
+		Extends: map[string]ExtendVal{
 			"AnotherClass": {},
 		},
 	}

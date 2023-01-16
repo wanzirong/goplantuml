@@ -10,7 +10,6 @@ call the Render() function and this will return a string with the class diagram.
 
 See github.com/jfeliu007/goplantuml/cmd/goplantuml/main.go for a command that uses this functions and outputs the text to
 the console.
-
 */
 package parser
 
@@ -39,6 +38,7 @@ const tab = "    "
 const builtinPackageName = "__builtin__"
 const implements = `"implements"`
 const extends = `"extends"`
+const dependents = `"dependents"`
 const aggregates = `"uses"`
 const aliasOf = `"alias of"`
 
@@ -63,6 +63,7 @@ type RenderingOptions struct {
 	Title                   string
 	Notes                   string
 	Aggregations            bool
+	Dependents              bool
 	Fields                  bool
 	Methods                 bool
 	Compositions            bool
@@ -71,6 +72,7 @@ type RenderingOptions struct {
 	ConnectionLabels        bool
 	AggregatePrivateMembers bool
 	PrivateMembers          bool
+	IgnoreStdPackages       bool
 }
 
 const aliasComplexNameComment = "'This class was created so that we can correctly have an alias pointing to this name. Since it contains dots that can break namespaces"
@@ -84,6 +86,8 @@ const (
 
 	// RenderImplementations is to be used in the SetRenderingOptions argument as the key to the map, when value is true, it will set the parser to render implementations
 	RenderImplementations
+
+	RenderDependents
 
 	// RenderAliases is to be used in the SetRenderingOptions argument as the key to the map, when value is true, it will set the parser to render aliases
 	RenderAliases
@@ -108,6 +112,8 @@ const (
 
 	// RenderPrivateMembers is used if private members (fields, methods) should be rendered
 	RenderPrivateMembers
+
+	RenderIgnoreStdPackages
 )
 
 // RenderingOption is an alias for an it so it is easier to use it as options in a map (see SetRenderingOptions(map[RenderingOption]bool) error)
@@ -137,6 +143,7 @@ func NewClassDiagramWithOptions(options *ClassDiagramOptions) (*ClassParser, err
 			Methods:          true,
 			Compositions:     true,
 			Implementations:  true,
+			Dependents:       true,
 			Aliases:          true,
 			ConnectionLabels: false,
 			Title:            "",
@@ -187,7 +194,7 @@ func NewClassDiagramWithOptions(options *ClassDiagramOptions) (*ClassParser, err
 			for i := range classParser.allInterfaces {
 				inter := classParser.getStruct(i)
 				if st.ImplementsInterface(inter) {
-					st.AddToExtends(i)
+					st.AddToExtends(i, false)
 				}
 			}
 		}
@@ -441,6 +448,7 @@ func (p *ClassParser) renderStructures(pack string, structures map[string]*Struc
 		composition := &LineStringBuilder{}
 		extends := &LineStringBuilder{}
 		aggregations := &LineStringBuilder{}
+		dependents := &LineStringBuilder{}
 		str.WriteLineWithDepth(0, fmt.Sprintf(`namespace %s {`, pack))
 
 		names := []string{}
@@ -452,7 +460,7 @@ func (p *ClassParser) renderStructures(pack string, structures map[string]*Struc
 
 		for _, name := range names {
 			structure := structures[name]
-			p.renderStructure(structure, pack, name, str, composition, extends, aggregations)
+			p.renderStructure(structure, pack, name, str, composition, extends, aggregations, dependents)
 		}
 		var orderedRenamedStructs []string
 		for tempName := range p.allRenamedStructs[pack] {
@@ -474,6 +482,9 @@ func (p *ClassParser) renderStructures(pack string, structures map[string]*Struc
 		}
 		if p.renderingOptions.Aggregations {
 			str.WriteLineWithDepth(0, aggregations.String())
+		}
+		if p.renderingOptions.Dependents {
+			str.WriteLineWithDepth(0, dependents.String())
 		}
 	}
 }
@@ -504,7 +515,7 @@ func (p *ClassParser) renderAliases(str *LineStringBuilder) {
 	}
 }
 
-func (p *ClassParser) renderStructure(structure *Struct, pack string, name string, str *LineStringBuilder, composition *LineStringBuilder, extends *LineStringBuilder, aggregations *LineStringBuilder) {
+func (p *ClassParser) renderStructure(structure *Struct, pack string, name string, str *LineStringBuilder, composition *LineStringBuilder, extends *LineStringBuilder, aggregations *LineStringBuilder, dependents *LineStringBuilder) {
 
 	privateFields := &LineStringBuilder{}
 	publicFields := &LineStringBuilder{}
@@ -525,6 +536,7 @@ func (p *ClassParser) renderStructure(structure *Struct, pack string, name strin
 	p.renderStructMethods(structure, privateMethods, publicMethods)
 	p.renderCompositions(structure, name, composition)
 	p.renderExtends(structure, name, extends)
+	p.renderDependent(structure, name, dependents)
 	p.renderAggregations(structure, name, aggregations)
 	if privateFields.Len() > 0 {
 		str.WriteLineWithDepth(0, privateFields.String())
@@ -545,6 +557,10 @@ func (p *ClassParser) renderCompositions(structure *Struct, name string, composi
 	orderedCompositions := []string{}
 
 	for c := range structure.Composition {
+		if p.renderingOptions.IgnoreStdPackages && isStandardPackage(c) {
+			continue
+		}
+
 		if !strings.Contains(c, ".") {
 			c = fmt.Sprintf("%s.%s", p.getPackageName(c, structure), c)
 		}
@@ -586,6 +602,10 @@ func (p *ClassParser) renderAggregationMap(aggregationMap map[string]struct{}, s
 	sort.Strings(orderedAggregations)
 
 	for _, a := range orderedAggregations {
+		if p.renderingOptions.IgnoreStdPackages && isStandardPackage(a) {
+			continue
+		}
+
 		if !strings.Contains(a, ".") {
 			a = fmt.Sprintf("%s.%s", p.getPackageName(a, structure), a)
 		}
@@ -607,23 +627,71 @@ func (p *ClassParser) getPackageName(t string, st *Struct) string {
 	}
 	return packageName
 }
-func (p *ClassParser) renderExtends(structure *Struct, name string, extends *LineStringBuilder) {
+func (p *ClassParser) renderExtends(structure *Struct, name string, extendItems *LineStringBuilder) {
 
 	orderedExtends := []string{}
-	for c := range structure.Extends {
+	for c, v := range structure.Extends {
+		if p.renderingOptions.IgnoreStdPackages && isStandardPackage(c) {
+			continue
+		}
 		if !strings.Contains(c, ".") {
 			c = fmt.Sprintf("%s.%s", structure.PackageName, c)
 		}
-		implementString := ""
+		connLabelStr, connLineStr := "", ""
 		if p.renderingOptions.ConnectionLabels {
-			implementString = implements
+			if v.IsExtend {
+				connLabelStr = implements
+
+			} else {
+				connLabelStr = extends
+			}
 		}
-		c = fmt.Sprintf(`"%s" <|-- %s"%s.%s"`, c, implementString, structure.PackageName, name)
+		if v.IsExtend {
+			connLineStr = "<|--"
+		} else {
+			connLineStr = "<|.."
+		}
+		c = fmt.Sprintf(`"%s" %s %s"%s.%s"`, c, connLineStr, connLabelStr, structure.PackageName, name)
 		orderedExtends = append(orderedExtends, c)
 	}
 	sort.Strings(orderedExtends)
 	for _, c := range orderedExtends {
-		extends.WriteLineWithDepth(0, c)
+		extendItems.WriteLineWithDepth(0, c)
+	}
+}
+
+func (p *ClassParser) renderDependent(structure *Struct, name string, dependentItems *LineStringBuilder) {
+	orderedDependentItems := []string{}
+
+	for c := range structure.Dependents {
+		if p.renderingOptions.IgnoreStdPackages && isStandardPackage(c) {
+			continue
+		}
+		if _, ok := structure.Extends[c]; ok {
+			continue
+		}
+		if _, ok := structure.Composition[c]; ok {
+			continue
+		}
+		if _, ok := structure.Aggregations[c]; ok {
+			continue
+		}
+		if _, ok := structure.PrivateAggregations[c]; ok {
+			continue
+		}
+		if !strings.Contains(c, ".") {
+			c = fmt.Sprintf("%s.%s", p.getPackageName(c, structure), c)
+		}
+		dependString := ""
+		if p.renderingOptions.ConnectionLabels {
+			dependString = dependents
+		}
+		c = fmt.Sprintf(`"%s" <.. %s"%s.%s"`, c, dependString, structure.PackageName, name)
+		orderedDependentItems = append(orderedDependentItems, c)
+	}
+	sort.Strings(orderedDependentItems)
+	for _, c := range orderedDependentItems {
+		dependentItems.WriteLineWithDepth(0, c)
 	}
 }
 
@@ -686,9 +754,10 @@ func (p *ClassParser) getOrCreateStruct(name string) *Struct {
 			Fields:              make([]*Field, 0),
 			Type:                "",
 			Composition:         make(map[string]struct{}, 0),
-			Extends:             make(map[string]struct{}, 0),
+			Extends:             make(map[string]ExtendVal, 0),
 			Aggregations:        make(map[string]struct{}, 0),
 			PrivateAggregations: make(map[string]struct{}, 0),
+			Dependents:          make(map[string]struct{}, 0),
 		}
 		p.structure[p.currentPackageName][name] = result
 	}
@@ -719,6 +788,8 @@ func (p *ClassParser) SetRenderingOptions(ro map[RenderingOption]interface{}) er
 			p.renderingOptions.Fields = val.(bool)
 		case RenderImplementations:
 			p.renderingOptions.Implementations = val.(bool)
+		case RenderDependents:
+			p.renderingOptions.Dependents = val.(bool)
 		case RenderMethods:
 			p.renderingOptions.Methods = val.(bool)
 		case RenderConnectionLabels:
@@ -731,6 +802,8 @@ func (p *ClassParser) SetRenderingOptions(ro map[RenderingOption]interface{}) er
 			p.renderingOptions.AggregatePrivateMembers = val.(bool)
 		case RenderPrivateMembers:
 			p.renderingOptions.PrivateMembers = val.(bool)
+		case RenderIgnoreStdPackages:
+			p.renderingOptions.IgnoreStdPackages = val.(bool)
 		default:
 			return fmt.Errorf("Invalid Rendering option %v", option)
 		}
