@@ -1,6 +1,6 @@
-[![godoc reference](https://img.shields.io/badge/godoc-reference-blue.svg)](https://godoc.org/github.com/jfeliu007/goplantuml/parser) [![Go Report Card](https://goreportcard.com/badge/github.com/jfeliu007/goplantuml)](https://goreportcard.com/report/github.com/jfeliu007/goplantuml) [![codecov](https://codecov.io/gh/jfeliu007/goplantuml/branch/master/graph/badge.svg)](https://codecov.io/gh/jfeliu007/goplantuml) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![GitHub release](https://img.shields.io/github/release/jfeliu007/goplantuml.svg)](https://github.com/jfeliu007/goplantuml/releases/)
-[![Build Status](https://travis-ci.org/jfeliu007/goplantuml.svg?branch=master)](https://travis-ci.org/jfeliu007/goplantuml)
+[![godoc reference](https://img.shields.io/badge/godoc-reference-blue.svg)](https://godoc.org/github.com/wanzirong/goplantuml/parser) [![Go Report Card](https://goreportcard.com/badge/github.com/wanzirong/goplantuml)](https://goreportcard.com/report/github.com/wanzirong/goplantuml) [![codecov](https://codecov.io/gh/wanzirong/goplantuml/branch/master/graph/badge.svg)](https://codecov.io/gh/wanzirong/goplantuml) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![GitHub release](https://img.shields.io/github/release/wanzirong/goplantuml.svg)](https://github.com/wanzirong/goplantuml/releases/)
+[![Build Status](https://travis-ci.org/wanzirong/goplantuml.svg?branch=master)](https://travis-ci.org/wanzirong/goplantuml)
 [![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go) 
 [![DUMELS Diagram](https://www.dumels.com/api/v1/badge/23ff0222-e93b-4e9f-a4ef-4d5d9b7a5c7d)](https://www.dumels.com/diagram/23ff0222-e93b-4e9f-a4ef-4d5d9b7a5c7d) 
 # GoPlantUML V2
@@ -11,7 +11,7 @@ PlantUML Class Diagram Generator for golang projects. Generates class diagram te
 Take a look at [www.dumels.com](https://www.dumels.com). We have created dumels using this library. 
 
 ## Code of Conduct
-Please, review the code of conduct [here](https://github.com/jfeliu007/goplantuml/blob/master/CODE_OF_CONDUCT.md "here").
+Please, review the code of conduct [here](https://github.com/wanzirong/goplantuml/blob/master/CODE_OF_CONDUCT.md "here").
 
 ### Prerequisites
 golang 1.17 or above
@@ -19,8 +19,8 @@ golang 1.17 or above
 ### Installing
 
 ```
-go get github.com/jfeliu007/goplantuml/parser
-go install github.com/jfeliu007/goplantuml/cmd/goplantuml@latest
+go get github.com/wanzirong/goplantuml/parser
+go install github.com/wanzirong/goplantuml/cmd/goplantuml@latest
 ```
 
 This will install the command goplantuml in your GOPATH bin folder.
@@ -75,7 +75,7 @@ Usage of goplantuml:
 
 #### Example
 ```
-goplantuml $GOPATH/src/github.com/jfeliu007/goplantuml/parser
+goplantuml $GOPATH/src/github.com/wanzirong/goplantuml/parser
 ```
 ```
 // echoes
@@ -133,7 +133,7 @@ strings.Builder *-- parser.LineStringBuilder
 @enduml
 ```
 ```
-goplantuml $GOPATH/src/github.com/jfeliu007/goplantuml/parser > ClassDiagram.puml
+goplantuml $GOPATH/src/github.com/wanzirong/goplantuml/parser > ClassDiagram.puml
 // Generates a file ClassDiagram.plum with the previous specifications
 ```
 
@@ -202,7 +202,7 @@ testingsupport.MyStruct3 o-- testingsupport.MyStruct1
 @enduml
 ```
 
-![alt text](https://raw.githubusercontent.com/jfeliu007/goplantuml/master/example/example.png)
+![alt text](https://raw.githubusercontent.com/wanzirong/goplantuml/master/example/example.png)
 
 ### Diagram using www.dumels.com
 [UML Diagram](https://www.dumels.com/diagram/23ff0222-e93b-4e9f-a4ef-4d5d9b7a5c7d)

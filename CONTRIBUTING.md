@@ -6,7 +6,7 @@ This document is still a work in progress. Feel free to create issues regarding 
 # Contributing
 When contributing to this repository, please first discuss the change you wish to make via the issues feature in github before making any changes. Everyone is welcome to comment on the issues as well as to offer solutions to the problem that can help others pick it up and work on it.
 
-Please note we have a [code of conduct](https://github.com/jfeliu007/goplantuml/blob/master/CODE_OF_CONDUCT.md "here"), please follow it in all your interactions with the project.
+Please note we have a [code of conduct](https://github.com/wanzirong/goplantuml/blob/master/CODE_OF_CONDUCT.md "here"), please follow it in all your interactions with the project.
 
 Any change to the project must be done through Pull Requests. Only the master branch will be present in this project unless it is necessary to introduce a new branch (e.g a new feature branch that needs multiple developers working on the same code base) . Tags will be cut from the master branch every time code is merged into master by using the following convention.
 ```v{major}.{minor}.{patch}```
@@ -27,7 +27,7 @@ The following is a check list that is required for every Pull Request to be acce
 - Make sure your code compiles for Golang version supported in the Readme file. If your code requires a new version of golang, please, specifie in the description the reason why it needed the new version and modify with your update the Readme file accordingly.
 - Modify the Readme.md file accordingly for any changes in the command usage, or in changes on how the digrams generate (e.g changes in how classes are identified in the diagram)
 - Provide 100% test coverage of the code for any new functionality or modification introduced in your PR.
-- Maintain a go report card score of A+. Check  the Go Report Card [Here](https://goreportcard.com/report/github.com/jfeliu007/goplantuml "Go Report Card Here") for the specifics on how to maintain the score.
+- Maintain a go report card score of A+. Check  the Go Report Card [Here](https://goreportcard.com/report/github.com/wanzirong/goplantuml "Go Report Card Here") for the specifics on how to maintain the score.
 - Maintain the godoc if necessary.
 - Make sure Travis builds still pass (This will happen automatically on the PR).
 - PRs must be reviewed by at least on person before it can be accepted.
@@ -35,4 +35,4 @@ The following is a check list that is required for every Pull Request to be acce
 - Make sure you have fun coding for the project ;-)
 
 # Code of Conduct
-Please, review the code of conduct [here](https://github.com/jfeliu007/goplantuml/blob/master/CODE_OF_CONDUCT.md "here").
+Please, review the code of conduct [here](https://github.com/wanzirong/goplantuml/blob/master/CODE_OF_CONDUCT.md "here").
